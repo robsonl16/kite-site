@@ -19,8 +19,8 @@ def fetch_wind_data(station_id, start_time, end_time):
     params = {  'spot_id': station_id,
                 'time_start': start_time.strftime('%Y-%m-%d %H:%M:%S'),
                 'time_end': end_time.strftime('%Y-%m-%d %H:%M:%S'),
-                'units_wind': 'mph',
-                'fields': 'wind,wind_gust,wind_dir',
+                'units_wind': 'kph',
+                'fields': '',
                 'wf_token': api_token,
                 'type': 'dataonly',
                 'format': 'json' }

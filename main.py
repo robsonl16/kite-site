@@ -14,3 +14,5 @@ output_file_path = 'C:/PythonTemp/wind_data_2023.csv'
 
 print(dataCollection.fetch_wind_avg_data(station_id=station_id, start_time=start_date, end_time=end_date))
 print(dataCollection.fetch_wind_dir_data(station_id=station_id, start_time=start_date, end_time=end_date))
+
+#This is a comment from Dad

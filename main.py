@@ -21,4 +21,3 @@ calculation = windCalculations.calculate_time_above_thresholds(wind, "Wind Speed
 windCalculations.plot_time_above_thresholds(calculation)
 
 
-#This is a comment from Dad

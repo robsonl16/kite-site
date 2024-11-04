@@ -1,0 +1,101 @@
+import os
+import requests
+import json
+import pandas as pd
+import time
+
+# Define the directory and filename for saving the cumulative data
+save_directory = "C:/weather_station_data"  # Update to your desired path
+os.makedirs(save_directory, exist_ok=True)  # Create directory if it doesn't exist
+cumulative_filename = os.path.join(save_directory, "all_weather_stations.csv")
+
+# Initialize cumulative station count
+total_stations = 0
+
+# Define the API endpoint
+url = "https://api.weatherflow.com/wxengine/rest/spot/getSpotDetailSetByZoomLevel"
+
+# WeatherFlow API token
+wf_token = "c6978316c4a132b29e5ec20850ecf0c8"
+
+# Function to fetch and append data for a specific 5x5 degree segment
+def fetch_and_append_segment(lat_min, lat_max, lon_min, lon_max):
+    global total_stations  # Access the cumulative station count
+
+    # Set parameters for API request
+    params = {
+        "units_wind": "mph",
+        "units_temp": "f",
+        "units_distance": "mi",
+        "units_precip": "mm",
+        "sort": "distance",
+        "spot_types": "1,100",
+        "stormprint_only": "false",
+        "include_nowcast_obs": "false",
+        "lat_min": str(lat_min),
+        "lat_max": str(lat_max),
+        "lon_min": str(lon_min),
+        "lon_max": str(lon_max),
+        "zoom": "12",
+        "wf_token": wf_token
+    }
+    
+    # Make the GET request to the API
+    response = requests.get(url, params=params)
+    
+    if response.status_code == 200:
+        # Parse the response to remove JSONP wrapping
+        content = response.text
+        if content.startswith("jQuery"):
+            start_idx = content.find("(") + 1
+            end_idx = content.rfind(")")
+            content = content[start_idx:end_idx]
+        
+        # Load JSON data
+        data = json.loads(content)
+        stations = data.get("spots", [])
+        
+        # Prepare data for saving
+        station_data = []
+        for station in stations:
+            station_data.append({
+                "Spot ID": station.get("spot_id"),
+                "Name": station.get("name"),
+                "Latitude": station.get("lat"),
+                "Longitude": station.get("lon")
+            })
+        
+        # Append data to cumulative CSV file
+        df = pd.DataFrame(station_data)
+        df.to_csv(cumulative_filename, mode='a', header=not os.path.exists(cumulative_filename), index=False)
+
+        # Create a unique filename based on the segment coordinates and save path
+        filename = os.path.join(save_directory, f"weather_stations_{lat_min}_{lat_max}_{lon_min}_{lon_max}.csv")
+        
+        # Save segment data to its own CSV file as well
+        df.to_csv(filename, index=False)
+        print(f"Saved data for segment {lat_min} to {lat_max}, {lon_min} to {lon_max} as {filename}")
+        
+        # Update running totals
+        num_stations = len(station_data)
+        total_stations += num_stations
+        print(f"Segment {lat_min} to {lat_max}, {lon_min} to {lon_max} found {num_stations} stations. Total so far: {total_stations}")
+    else:
+        print(f"Failed to retrieve data for segment {lat_min} to {lat_max}, {lon_min} to {lon_max}")
+
+# Loop through the world in 5x5 degree increments
+def collect_world_data():
+    # Latitude ranges from -90 to 90, Longitude ranges from -180 to 180
+    for lat in range(0, 90, 5):
+        for lon in range(-180, 180, 5):
+            lat_min, lat_max = lat, lat + 5
+            lon_min, lon_max = lon, lon + 5
+            
+            # Fetch and append data for the current segment
+            fetch_and_append_segment(lat_min, lat_max, lon_min, lon_max)
+            
+            # Pause briefly to respect rate limits and avoid overloading the server
+            time.sleep(1)
+
+# Run the data collection
+collect_world_data()

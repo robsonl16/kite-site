@@ -7,8 +7,8 @@ import windCalculations
 station_id = '183476'
 api_url = "https://api.weatherflow.com/wxengine/rest/graph/getGraph"
 api_token = '8408aaf6de0d159232098dc647c833b1'
-start_date = datetime(2023, 1, 1)
-end_date = datetime(2023, 1, 2)
+start_date = datetime(2023, 3, 1, 8)
+end_date = datetime(2023, 3, 6, 9)
 days_per_request = 5
 wind_speed_thresholds = [8, 12, 16, 20, 24, 28]
 output_file_path = 'C:/PythonTemp/wind_data_2023.csv'

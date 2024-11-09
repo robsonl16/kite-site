@@ -32,7 +32,7 @@ stations_gdf["Municipality"] = None
 stations_gdf["Nearest Municipality"] = None
 
 # Define output file path
-output_file = "C:/weather_station_data/weather_stations_with_boundaries.csv"
+output_file = "C:/weather_station_data/weather_stations_with_boundaries_241106.csv"
 
 # Function to assign boundary or nearest boundary with distance calculation in a projected CRS
 def assign_boundary_or_nearest(stations, boundaries, boundary_name, nearest_boundary_name):

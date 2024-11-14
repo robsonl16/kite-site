@@ -18,7 +18,7 @@ def get_elevation(lat, lon):
 elevation_results = []
 
 # Start the loop from the 2001st row
-for index, row in locations.iloc[2000:].iterrows():
+for index, row in locations.iloc[33000:].iterrows():
     station_id = row['Station_ID']
     station_name = row['Station Name']
     lat = row['Latitude']

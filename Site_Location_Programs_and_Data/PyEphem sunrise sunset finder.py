@@ -23,12 +23,13 @@ def process_locations(file_path: str, start_date: datetime, end_date: datetime, 
         station_name = row['Station Name']
         latitude = row['Latitude']
         longitude = row['Longitude']
+        elevation = row['Elevation (m)']
 
         # Set up observer
         observer = ephem.Observer()
         observer.lat = str(latitude)
         observer.lon = str(longitude)
-        observer.elevation = row.get('Elevation', 0)
+        observer.elevation = int(elevation)
 
         current_date = start_date
         while current_date <= end_date:
@@ -106,7 +107,7 @@ def process_locations(file_path: str, start_date: datetime, end_date: datetime, 
         pd.DataFrame(results).to_csv(final_intermediate_file, mode='a', header=True, index=False)
     
     # Combine all intermediate files into a final output
-    combined_output_path = os.path.join(output_folder, 'combined_sunrise_sunset_dawn_dusk_times.csv')
+    combined_output_path = os.path.join(output_folder, 'combined_sunrise_sunset_dawn_dusk_times2.csv')
     with open(combined_output_path, 'w') as combined_file:
         for i, file in enumerate(intermediate_files):
             with open(file, 'r') as f:
@@ -118,9 +119,9 @@ def process_locations(file_path: str, start_date: datetime, end_date: datetime, 
     log.info(f"Final results saved to '{combined_output_path}'")
 
 # Define date range and timezone offset for the calculation
-start_date = datetime(2024, 1, 1)
-end_date = datetime(2024, 12, 31)
+start_date = datetime(2025, 1, 1)
+end_date = datetime(2025, 12, 31)
 timezone_offset = 0  # Change as needed
 
 # Run the location processing
-process_locations('c:/Kite_site/Station_Locations.csv', start_date, end_date, timezone_offset)
+process_locations('c:/Kite_site/Station_Elevations_Final.csv', start_date, end_date, timezone_offset)

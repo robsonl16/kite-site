@@ -11,14 +11,17 @@ logging.basicConfig(level=logging.INFO)
 log = logging.getLogger()
 
 # Processing function for a CSV of locations
-def process_locations(file_path: str, start_date: datetime, end_date: datetime, timezone_offset: int):
+def process_locations(file_path: str, start_date: datetime, end_date: datetime, timezone_offset: int, start_idx: int = 1):
     """Process sunrise, sunset, dawn, and dusk times for multiple locations from a CSV file."""
     locations_df = pd.read_csv(file_path)
     intermediate_files = []
     results = []
     output_folder = os.path.dirname(file_path)
-    
+
     for idx, (_, row) in enumerate(locations_df.iterrows(), start=1):
+        if idx < start_idx:
+            continue  # Skip rows until the specified start index
+
         station_id = row['Station_ID']
         station_name = row['Station Name']
         latitude = row['Latitude']
@@ -91,9 +94,9 @@ def process_locations(file_path: str, start_date: datetime, end_date: datetime, 
         if idx % 100 == 0:
             log.info(f"Processed {idx} stations")
 
-        # Save intermediate results every 1000 stations
-        if idx % 1000 == 0:
-            intermediate_file_path = os.path.join(output_folder, f"intermediate_{idx // 1000}.csv")
+        # Save intermediate results every 400 stations
+        if idx % 400 == 0:
+            intermediate_file_path = os.path.join(output_folder, f"intermediate_missed3_{idx // 400}.csv")
             intermediate_files.append(intermediate_file_path)
 
             # Append new results to the intermediate file
@@ -102,18 +105,20 @@ def process_locations(file_path: str, start_date: datetime, end_date: datetime, 
 
     # Save final results if any remain
     if results:
-        final_intermediate_file = os.path.join(output_folder, f"intermediate_{(idx // 1000) + 1}.csv")
+        final_intermediate_file = os.path.join(output_folder, f"intermediate_missed3_{(idx // 400) + 1}.csv")
         intermediate_files.append(final_intermediate_file)
         pd.DataFrame(results).to_csv(final_intermediate_file, mode='a', header=True, index=False)
-    
+
     # Combine all intermediate files into a final output
-    combined_output_path = os.path.join(output_folder, 'combined_sunrise_sunset_dawn_dusk_times2.csv')
-    with open(combined_output_path, 'w') as combined_file:
+    combined_output_path = os.path.join(output_folder, 'combined_sunrise_sunset_dawn_dusk_times3.csv')
+    with open(combined_output_path, 'w', encoding='utf-8') as combined_file:
         for i, file in enumerate(intermediate_files):
-            with open(file, 'r') as f:
+            with open(file, 'r', encoding='utf-8') as f:
                 if i > 0:
                     next(f)  # Skip header for subsequent files
                 combined_file.write(f.read())
+                
+
             os.remove(file)  # Remove intermediate file after combining
 
     log.info(f"Final results saved to '{combined_output_path}'")
@@ -124,4 +129,4 @@ end_date = datetime(2025, 12, 31)
 timezone_offset = 0  # Change as needed
 
 # Run the location processing
-process_locations('c:/Kite_site/Station_Elevations_Final.csv', start_date, end_date, timezone_offset)
+process_locations('c:/Kite_site/Station_Elevations_Missed2.csv', start_date, end_date, timezone_offset, start_idx=0)

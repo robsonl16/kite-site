@@ -3,7 +3,7 @@ import requests
 import time
 
 # Load the CSV file
-locations = pd.read_csv(r'C:\Kite_site\NoNoElev.csv')
+locations = pd.read_csv(r'C:\Kite_site\241117_new_elevations.csv')
 
 # Define the function to get elevation
 def get_elevation(lat, lon):
@@ -29,9 +29,9 @@ def get_elevation(lat, lon):
 elevation_results = []
 
 # Start the loop from the 2001st row
-for index, row in locations.iloc[0:].iterrows():
-    station_id = row['Station_ID']
-    station_name = row['Station Name']
+for index, row in locations.iloc[1:].iterrows():
+    station_id = row['Station_Id']
+    station_name = row['Station_Name']
     lat = row['Latitude']
     lon = row['Longitude']
     
@@ -62,6 +62,6 @@ for index, row in locations.iloc[0:].iterrows():
 
 # Final save for all results
 elevation_df = pd.DataFrame(elevation_results)
-elevation_df.to_csv('C:/Kite_site/Station_Elevations_NoNo.csv', index=False)
+elevation_df.to_csv('C:/Kite_site/Station_Elevations_241117.csv', index=False)
 
-print("Final elevation data saved to C:/Kite_site/Station_Elevations.csv")
+print("Final elevation data saved to C:/Kite_site/Station_Elevations_241117.csv")

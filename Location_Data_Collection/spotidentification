@@ -3,11 +3,12 @@ import requests
 import json
 import pandas as pd
 import time
+import numpy as np
 
 # Define the directory and filename for saving the cumulative data
 save_directory = "C:/weather_station_data"  # Update to your desired path
 os.makedirs(save_directory, exist_ok=True)  # Create directory if it doesn't exist
-cumulative_filename = os.path.join(save_directory, "all_weather_stations.csv")
+cumulative_filename = os.path.join(save_directory, "all_weather_stations_241117_z20.csv")
 
 # Initialize cumulative station count
 total_stations = 0
@@ -22,7 +23,7 @@ wf_token = "c6978316c4a132b29e5ec20850ecf0c8"
 MIN_LONGITUDE_SLIVER = 0.1
 
 # Function to fetch and append data for a specific latitude range with adaptive longitude slivers
-def fetch_with_longitude_slivers(lat_min, lat_max, lon_min, lon_max, zoom=18):
+def fetch_with_longitude_slivers(lat_min, lat_max, lon_min, lon_max, zoom=20):
     global total_stations
 
     # If longitude range is smaller than minimum sliver width, stop further shrinking
@@ -61,13 +62,17 @@ def fetch_with_longitude_slivers(lat_min, lat_max, lon_min, lon_max, zoom=18):
             fetch_with_longitude_slivers(lat_min, lat_max, mid_lon, lon_max, zoom)
             return
 
-        # Parse JSON response content
+        # Parse JSON response content with backslash handling
         try:
             content = response.text
             if content.startswith("jQuery"):
                 start_idx = content.find("(") + 1
                 end_idx = content.rfind(")")
                 content = content[start_idx:end_idx]
+            
+            # Escape unescaped backslashes
+            content = content.replace('\\', '\\\\')
+            
             data = json.loads(content)
         except json.JSONDecodeError as e:
             print(f"JSON decoding error at segment {lat_min} to {lat_max}, {lon_min} to {lon_max}: {e}")
@@ -85,20 +90,27 @@ def fetch_with_longitude_slivers(lat_min, lat_max, lon_min, lon_max, zoom=18):
             station_data.append({
                 "Spot ID": station.get("spot_id"),
                 "Name": station.get("name"),
+                "Station Code": station.get("station_code"),
                 "Latitude": station.get("lat"),
-                "Longitude": station.get("lon")
+                "Longitude": station.get("lon"),
+                "City": station.get("city"),
+                "State": station.get("state"),
+                "Country": station.get("country"),
+                "County": station.get("county"),
+                "Time Zone Name": station.get("tz_name"),
+                "Time Zone Name Short": station.get("tz_name_short"),
+                "Time Zone Offset": station.get("tz_offset"),
+                "Structure Type": station.get("structure_type"),
+                "Mesonet Name": station.get("mesonet_name"),
+                "Ground Elevation": station.get("ground_elevation"),
+                "Install Date UTC": station["stations"][0].get("install_date_utc") if station.get("stations") else None,
+                "Station Elevation": station["stations"][0].get("station_elevation") if station.get("stations") else None
             })
         
         # Append data to cumulative CSV file
         df = pd.DataFrame(station_data)
         df.to_csv(cumulative_filename, mode='a', header=not os.path.exists(cumulative_filename), index=False)
 
-        # Save segment data to its own CSV file as well
-        filename = os.path.join(save_directory, f"weather_stations_{lat_min}_{lat_max}_{lon_min}_{lon_max}.csv")
-        if len(station_data) > 0:
-            df.to_csv(filename, index=False)
-            print(f"Saved data for segment {lat_min} to {lat_max}, {lon_min} to {lon_max} as {filename}")
-        
         # Update running totals
         num_stations = len(station_data)
         total_stations += num_stations
@@ -106,17 +118,18 @@ def fetch_with_longitude_slivers(lat_min, lat_max, lon_min, lon_max, zoom=18):
     else:
         print(f"Failed to retrieve data for segment {lat_min} to {lat_max}, {lon_min} to {lon_max}")
 
+
 # Loop through the world in latitude bands with adaptive longitude slivers
 def collect_world_data():
     # Latitude ranges from -90 to 90, Longitude ranges from -180 to 180
-    for lat in range(-90, 90, 2):
-        lat_min, lat_max = lat, lat + 2
+    for lat in np.arange(-90, 89.9, 0.2):
+        lat_min, lat_max = lat, lat + 0.2
         print(f"Processing latitude band {lat_min} to {lat_max}")
         # Process each latitude band, allowing longitude slivers to shrink as needed
-        fetch_with_longitude_slivers(lat_min, lat_max, -180, 180)
+        fetch_with_longitude_slivers(lat_min, lat_max, -180, 179.9999)
 
         # Pause briefly to respect rate limits and avoid overloading the server
-        time.sleep(0.5)
+        time.sleep(0.01)
 
 # Run the data collection
 collect_world_data()

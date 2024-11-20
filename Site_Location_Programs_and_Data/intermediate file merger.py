@@ -3,7 +3,7 @@ import pandas as pd
 
 # Folder containing intermediate CSV files
 input_folder = r'c:\Kite_site\SUN'
-output_file = os.path.join(input_folder, 'merged_output_241119.csv')
+output_file = os.path.join(input_folder, 'merged_output_241119x.csv')
 
 # List to hold DataFrame objects for all CSV files
 dataframes = []

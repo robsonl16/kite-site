@@ -3,9 +3,9 @@ import pandas as pd
 from shapely.geometry import Point
 
 # Paths to downloaded shapefiles (update these paths to your actual files)
-national_boundary_path = "C:/weather_station_data/Boundaries/geoBoundariesCGAZ_ADM0.shp"
-regional_boundary_path = "C:/weather_station_data/Boundaries/geoBoundariesCGAZ_ADM1.shp"
-municipal_boundary_path = "C:/weather_station_data/Boundaries/geoBoundariesCGAZ_ADM2.shp"
+national_boundary_path = "C://weather_station_data/Boundaries/geoBoundariesCGAZ_ADM0.shp"
+regional_boundary_path = "C://weather_station_data/Boundaries/geoBoundariesCGAZ_ADM1.shp"
+municipal_boundary_path = "C://weather_station_data/Boundaries/geoBoundariesCGAZ_ADM2.shp"
 
 # Load boundary shapefiles
 national_boundaries = gpd.read_file(national_boundary_path)
@@ -13,7 +13,7 @@ regional_boundaries = gpd.read_file(regional_boundary_path)
 municipal_boundaries = gpd.read_file(municipal_boundary_path)
 
 # Load the station data with latitude and longitude
-station_data_path = "C:/weather_station_data/all_weather_stations_241105.csv"
+station_data_path = "C://weather_station_data/Need_Locations.csv"
 stations_df = pd.read_csv(station_data_path)
 
 # Convert stations to a GeoDataFrame
@@ -32,7 +32,7 @@ stations_gdf["Municipality"] = None
 stations_gdf["Nearest Municipality"] = None
 
 # Define output file path
-output_file = "C:/weather_station_data/weather_stations_with_boundaries_241106.csv"
+output_file = "C:/weather_station_data/weather_stations_with_boundaries_241118.csv"
 
 # Function to assign boundary or nearest boundary with distance calculation in a projected CRS
 def assign_boundary_or_nearest(stations, boundaries, boundary_name, nearest_boundary_name):
